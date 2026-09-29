@@ -1,0 +1,16 @@
+# Local agent and AI assistant configuration; keep out of the published BSP.
+/.agents/
+/.codex/
+/.aws/
+/agents.md
+/AGENTS.md
+/CLAUDE.md
+/GEMINI.md
+/.github/copilot-instructions.md
+
+# Local build outputs and credentials.
+/out/
+*.log
+.env
+.env.*
+!.env.example
