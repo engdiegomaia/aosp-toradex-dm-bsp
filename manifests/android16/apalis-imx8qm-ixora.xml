@@ -5,5 +5,5 @@
            path="vendor/toradex/aosp-toradex-dm-bsp"
            remote="community"
            revision="5f5a509e9ed40ffa0fce1aad639c75ca33b8488a" />
-  <include name="android16/nxp-imx-android-16.0.0_1.2.0-pinned.xml" />
+  <include name="manifests/android16/nxp-imx-android-16.0.0_1.2.0-pinned.xml" />
 </manifest>
