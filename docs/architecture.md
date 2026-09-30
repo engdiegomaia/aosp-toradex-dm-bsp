@@ -14,7 +14,7 @@ Prefer vendor Android implementations for platform, kernel, bootloader, HALs, gr
 
 ## Branches and platforms
 
-Branches track Android baselines: `android16-toradex`, `android17-toradex`, and so on. Each baseline branch can contain multiple Toradex modules. Add platforms as `device/toradex/<module>/` and keep carrier-specific configuration under `boards/<carrier>/` where the NXP build permits it. Give each buildable combination its own Repo manifest, for example `manifests/android16/apalis-imx8qm-ixora.xml`.
+Branches identify Android baseline and platform where a dedicated platform branch is needed: the Apalis reference branch is `android16-toradex-apalis-imx8`. Prefer adding compatible platforms as `device/toradex/<module>/` folders and manifests on the same baseline branch; split branches when vendor baselines or maintenance needs differ. Keep carrier-specific configuration under `boards/<carrier>/` where the NXP build permits it. Give each buildable combination its own Repo manifest, for example `manifests/android16/apalis-imx8qm-ixora.xml`.
 
 The initial target uses NXP's required product identifier `apalis_imx8qm` and lunch choice `apalis_imx8qm-nxp_stable-userdebug`. NXP `imx-make.sh` searches `device/nxp` for this product name, so the integration repository is checked out at `vendor/toradex/aosp-toradex-dm-bsp`; the helper copies the product into `device/nxp/imx8q/apalis_imx8qm`. A symlink or product only under `device/toradex` is not discovered by the current NXP tooling.
 

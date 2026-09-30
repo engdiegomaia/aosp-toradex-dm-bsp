@@ -26,7 +26,7 @@ The kernel prebuilts are prepared by NXP's `device/nxp/common/tools/setup_androi
 ```bash
 mkdir toradex-android && cd toradex-android
 repo init -u git@github.com:engdiegomaia/aosp-toradex-dm-bsp.git \
-  -b android16-toradex -m manifests/android16/apalis-imx8qm-ixora.xml
+  -b android16-toradex-apalis-imx8 -m manifests/android16/apalis-imx8qm-ixora.xml
 repo sync -j4
 
 export TORADEX_APALIS_FIRMWARE_DIR=/path/to/authorized/apalis-firmware

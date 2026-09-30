@@ -2,7 +2,7 @@
 
 A community-maintained integration of SoC-vendor Android BSPs with Toradex module and carrier support. This is not an official Toradex Android BSP and is not maintained or officially supported by Toradex.
 
-The first reference target is **Apalis iMX8QM + Ixora**, using NXP Android `android-16.0.0_1.2.0`. This branch is `android16-toradex`. Platforms for the same Android baseline belong in separate `device/toradex/<module>/` folders and platform manifests, not separate long-lived platform branches.
+The first reference target is **Apalis iMX8QM + Ixora**, using NXP Android `android-16.0.0_1.2.0`. This branch is `android16-toradex-apalis-imx8`. Additional platforms should use separate `device/toradex/<module>/` folders and platform manifests; create platform-specific branches only when their source baselines require independent maintenance.
 
 ## Status
 
