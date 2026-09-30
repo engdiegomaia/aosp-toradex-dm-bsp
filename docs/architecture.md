@@ -3,27 +3,28 @@
 ## Integration model
 
 ```text
-AOSP release + SoC-vendor Android BSP + Toradex hardware references
+AOSP + SoC-vendor Android BSP + Toradex module/carrier hardware support
                               ↓
-                 Toradex community adaptation
+                   Toradex Android layer
                               ↓
-                  module + carrier Android product
+                   module/carrier product
 ```
 
-Reuse the SoC vendor's Android platform, kernel, bootloader, HALs, graphics, multimedia, firmware, and services whenever suitable. Adapt only the differences needed for Toradex modules and carrier boards. Keep each adaptation traceable to its source and reason.
+Prefer vendor Android implementations for platform, kernel, bootloader, HALs, graphics, multimedia, firmware, and services. Use the corresponding Toradex BSP as a hardware reference. Port only required differences and record provenance, hardware dependency, and upstream revision.
 
-## Hardware layers
+## Branches and platforms
 
-- **SoC:** vendor Android baseline and SoC-wide support.
-- **Module:** Toradex module configuration, memory, storage, module peripherals, and module-specific device tree.
-- **Carrier:** connector routing and carrier peripherals, isolated under `boards/<carrier>/` when practical.
+Branches track Android baselines: `android16-toradex`, `android17-toradex`, and so on. Each baseline branch can contain multiple Toradex modules. Add platforms as `device/toradex/<module>/` and keep carrier-specific configuration under `boards/<carrier>/` where the NXP build permits it. Give each buildable combination its own Repo manifest, for example `manifests/android16/apalis-imx8qm-ixora.xml`.
 
-The first combination is NXP i.MX8QM → Apalis iMX8QM → Ixora. Do not assume an Apalis + Ixora setting applies to another carrier or module SKU.
+The initial target uses NXP's required product identifier `apalis_imx8qm` and lunch choice `apalis_imx8qm-nxp_stable-userdebug`. NXP `imx-make.sh` searches `device/nxp` for this product name, so the integration repository is checked out at `vendor/toradex/aosp-toradex-dm-bsp`; the helper copies the product into `device/nxp/imx8q/apalis_imx8qm`. A symlink or product only under `device/toradex` is not discovered by the current NXP tooling.
 
-## Source layout
+## Source layout and licensing
 
-This repository is an integration layer. Repo manifests describe upstream/vendor source repositories; `device/toradex/` holds Toradex product definitions and small, reviewable adaptations. Do not vendor complete source trees without a documented licensing or technical reason. Keep SoC vendor, module, carrier, and temporary workaround changes distinct.
+- `manifests/android16/` pins the vendor/AOSP source tree; platform manifests add this integration project.
+- `device/toradex/` contains Toradex Android product definitions.
+- `overlays/kernel/` and `overlays/uboot/` contain small, license-identified adaptations.
+- `scripts/` materializes overlays after `repo sync`; do not edit generated files in the Android checkout.
+- `firmware/` contains hashes and instructions only. Restricted binary firmware stays outside Git.
+- `docs/` records baselines, build procedures, validation, and limitations.
 
-## Initial product naming
-
-The POC currently uses vendor product configuration under `device/toradex/apalis_imx8qm`. The target convention is `toradex_apalis_imx8qm_ixora-userdebug`; exact lunch name remains to be verified from the integrated tree before it is advertised as buildable.
+The self-project entry in a development manifest follows the baseline branch. Release manifests must pin this project to the integration commit and every other project to immutable revisions.

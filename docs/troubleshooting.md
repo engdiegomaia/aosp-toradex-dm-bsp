@@ -1,17 +1,21 @@
 # Troubleshooting
 
-## `repo sync` succeeds but the product is missing
+## `repo sync` cannot fetch a project
 
-The POC snapshot manifest does not by itself import the local Toradex wrapper/product files. Confirm that the selected integration revision includes the device definitions and any vendor-prescribed setup steps.
+The pinned NXP manifest contains account-controlled or separately licensed projects. Confirm that your NXP account has access and that the release terms permit your use. Do not remove a manifest project silently or replace it with a floating branch.
 
-## Build requires unavailable files
+## The Apalis product is missing from `lunch`
 
-NXP Android releases may require proprietary packages or release archives not present in public Git repositories. Obtain them from the vendor under the applicable terms and follow the matching release documentation. Do not substitute files from another BSP version without checking compatibility.
+Run `scripts/prepare-apalis-overlay.sh "$PWD"` from the Android workspace before `source build/envsetup.sh`. It copies the product into the `device/nxp/imx8q/` location required by NXP's Soong discovery and build scripts. Confirm `device/nxp/imx8q/apalis_imx8qm/AndroidProducts.mk` exists afterward.
 
-## Board does not boot
+## Overlay preparation fails on firmware hashes
 
-The POC development flow depended on a specific Apalis SKU, Ixora revision, existing Android eMMC partition layout, U-Boot configuration, and matching kernel/DT/ramdisk payloads. Capture the serial log and verify image provenance and hashes. Do not treat historical TFTP scripts as a blank-eMMC provisioning procedure.
+Obtain the Apalis SCFW and matching SECO container through an authorized Toradex BSP build, place only those inputs in a local directory, set `TORADEX_APALIS_FIRMWARE_DIR`, and check the listed SHA-256 values. Do not download arbitrary versions or commit the binaries.
 
-## Peripheral behavior differs
+## Kernel patch or overlay does not apply
 
-Check exact module SKU and carrier revision first. Compare the Android kernel/device tree with the matching Toradex BSP, then record the test and evidence in the hardware matrix. Do not copy a Linux BSP change into Android without validating it against the Android vendor baseline.
+Confirm the manifest uses the documented NXP Android 16 baseline. The helper refuses unexpected DTS Makefile and U-Boot whitelist layouts; inspect the upstream diff before updating the matching logic. Do not hand-edit generated vendor files because `repo sync` replaces them.
+
+## Build or flash fails
+
+The NXP MEK product depends on a restricted signed codec artifact. Obtain the licensed package; never create an unsigned replacement. The current partition table inherits a 28 GiB MEK layout and is unsafe for the reference 14.8 GiB eMMC. Do not flash generated partition or installer images. Capture UART logs and use the POC's tested recovery chain until a reviewed Apalis installation procedure is available.

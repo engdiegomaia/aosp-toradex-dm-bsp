@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/* Toradex 10.1-inch LVDS kit, direct Ixora connection.
+ * Ported from Toradex BSP 7.7 apalis-imx8_panel-cap-touch-10inch-lvds
+ * overlay. Keep NXP 6.12 SoC clocks, input endpoints and power domains.
+ * Touch wiring is inherited from atmel_mxt_ts in imx8-apalis-v1.1.dtsi.
+ */
+&backlight { status = "okay"; };
+&pwm_lvds1 { status = "okay"; };
+&ldb2_phy { status = "okay"; };
+&ldb2 {
+    status = "okay";
+    lvds-channel@0 {
+        fsl,data-mapping = "spwg";
+        fsl,data-width = <24>;
+        status = "okay";
+        port@1 {
+            reg = <1>;
+            ixora_lvds_out: endpoint {
+                remote-endpoint = <&ixora_panel_in>;
+            };
+        };
+    };
+};
+&panel_lvds {
+    status = "okay";
+    data-mapping = "vesa-24";
+    width-mm = <217>;
+    height-mm = <136>;
+    panel-timing {
+        clock-frequency = <68900000 71100000 73400000>;
+        hactive = <1280 1280 1280>;
+        vactive = <800 800 800>;
+        hback-porch = <23 60 71>;
+        hfront-porch = <23 60 71>;
+        hsync-len = <15 40 47>;
+        vback-porch = <5 7 10>;
+        vfront-porch = <5 7 10>;
+        vsync-len = <6 9 12>;
+        de-active = <1>;
+        pixelclk-active = <1>;
+    };
+    port {
+        ixora_panel_in: endpoint {
+            remote-endpoint = <&ixora_lvds_out>;
+        };
+    };
+};
+
+/* Apalis I2C1, address 0x4a; GPIO5 interrupt and GPIO6 reset. */
+&atmel_mxt_ts { status = "okay"; };

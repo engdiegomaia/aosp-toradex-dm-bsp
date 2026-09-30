@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="community" fetch="https://github.com/" />
+  <project name="engdiegomaia/aosp-toradex-dm-bsp"
+           path="vendor/toradex/aosp-toradex-dm-bsp"
+           remote="community"
+           revision="refs/heads/android16-toradex" />
+  <include name="android16/nxp-imx-android-16.0.0_1.2.0-pinned.xml" />
+</manifest>

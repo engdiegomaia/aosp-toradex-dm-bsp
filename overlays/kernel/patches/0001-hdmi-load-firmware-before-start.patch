@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: GPL-2.0-only
+# Ported for the Toradex Apalis iMX8QM integration; kernel source is NXP kernel_imx at the pinned Android baseline.
+--- a/drivers/gpu/drm/imx/mhdp/cdns-mhdp-imx8qm.c
++++ b/drivers/gpu/drm/imx/mhdp/cdns-mhdp-imx8qm.c
+@@ -604,13 +604,6 @@
+ 	return 0;
+ }
+ 
+-static void cdns_mhdp_firmware_load_cont(const struct firmware *fw, void *context)
+-{
+-	struct imx_mhdp_device *imx_mhdp = context;
+-
+-	imx_mhdp->fw = fw;
+-}
+-
+ static int cdns_mhdp_firmware_load(struct imx_mhdp_device *imx_mhdp)
+ {
+ 	const u8 *iram;
+@@ -629,23 +622,34 @@
+ 	if (!imx_mhdp->firmware_name)
+ 		goto out;
+ 
+-	if (!imx_mhdp->fw) {
+-		ret = request_firmware_nowait(THIS_MODULE, FW_ACTION_NOUEVENT,
+-						imx_mhdp->firmware_name,
+-						imx_mhdp->mhdp.dev, GFP_KERNEL,
+-						imx_mhdp,
+-						cdns_mhdp_firmware_load_cont);
+-		if (ret < 0) {
+-			DRM_ERROR("failed to load firmware\n");
+-			return -ENOENT;
+-		}
+-	} else {
+-		iram = imx_mhdp->fw->data + FW_IRAM_OFFSET;
+-		dram = iram + FW_IRAM_SIZE;
+-
+-		cdns_mhdp_firmware_write_section(imx_mhdp, iram, FW_IRAM_SIZE, ADDR_IMEM);
+-		cdns_mhdp_firmware_write_section(imx_mhdp, dram, FW_DRAM_SIZE, ADDR_DMEM);
+-	}
++	/* Toradex BSP: do not rewrite IRAM while the HDMI uCPU is running.
++	 * Component binding can be retried when the LVDS panel becomes ready.
++	 */
++	if (!cdns_mhdp_bus_read(&imx_mhdp->mhdp, APB_CTRL)) {
++		DRM_INFO("HDMI uCPU already running, skipping FW load.\n");
++		goto out;
++	}
++
++	/* The controller must contain the complete image before releasing reset. */
++	ret = request_firmware(&imx_mhdp->fw, imx_mhdp->firmware_name,
++			       imx_mhdp->mhdp.dev);
++	if (ret) {
++		DRM_ERROR("failed to load HDMI firmware: %d\n", ret);
++		return ret;
++	}
++	if (imx_mhdp->fw->size < FW_IRAM_OFFSET + FW_IRAM_SIZE + FW_DRAM_SIZE) {
++		DRM_ERROR("HDMI firmware image is too small: %zu\n", imx_mhdp->fw->size);
++		release_firmware(imx_mhdp->fw);
++		imx_mhdp->fw = NULL;
++		return -EINVAL;
++	}
++
++	iram = imx_mhdp->fw->data + FW_IRAM_OFFSET;
++	dram = iram + FW_IRAM_SIZE;
++	cdns_mhdp_firmware_write_section(imx_mhdp, iram, FW_IRAM_SIZE, ADDR_IMEM);
++	cdns_mhdp_firmware_write_section(imx_mhdp, dram, FW_DRAM_SIZE, ADDR_DMEM);
++	release_firmware(imx_mhdp->fw);
++	imx_mhdp->fw = NULL;
+ 
+ out:
+ 	/* un-reset ucpu */

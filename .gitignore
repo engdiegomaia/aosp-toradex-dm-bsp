@@ -10,7 +10,10 @@
 
 # Local build outputs and credentials.
 /out/
+/android_build/
 *.log
 .env
 .env.*
 !.env.example
+/firmware/apalis/*.bin
+/firmware/apalis/*.img

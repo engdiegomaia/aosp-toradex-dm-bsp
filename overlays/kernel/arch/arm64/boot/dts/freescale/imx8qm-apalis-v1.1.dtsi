@@ -1,0 +1,97 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+/*
+ * Copyright 2022 Toradex
+ */
+
+#include <dt-bindings/pwm/pwm.h>
+#include "imx8qm.dtsi"
+#include "imx8-apalis-v1.1.dtsi"
+
+/ {
+	model = "Toradex Apalis iMX8QM V1.1";
+	compatible = "toradex,apalis-imx8-v1.1",
+		     "fsl,imx8qm";
+};
+
+/* Enable the HDMI transmitter and its clocks on the Apalis module. */
+&irqsteer_hdmi {
+	status = "okay";
+};
+
+&hdmi_lpcg_i2c0 {
+	status = "okay";
+};
+
+&hdmi_lpcg_lis_ipg {
+	status = "okay";
+};
+
+&hdmi_lpcg_pwm_ipg {
+	status = "okay";
+};
+
+&hdmi_lpcg_i2s {
+	status = "okay";
+};
+
+&hdmi_lpcg_gpio_ipg {
+	status = "okay";
+};
+
+&hdmi_lpcg_msi_hclk {
+	status = "okay";
+};
+
+&hdmi_lpcg_pxl {
+	status = "okay";
+};
+
+&hdmi_lpcg_phy {
+	status = "okay";
+};
+
+&hdmi_lpcg_apb_mux_csr {
+	status = "okay";
+};
+
+&hdmi_lpcg_apb_mux_ctrl {
+	status = "okay";
+};
+
+&hdmi_lpcg_apb {
+	status = "okay";
+};
+
+&hdmi {
+	status = "okay";
+};
+
+/* Route the Apalis HSIO lanes and external reference clock to Wi-Fi on PCIe B. */
+&hsio_phy {
+	fsl,hsio-cfg = "pciea-pcieb-sata";
+	fsl,refclk-pad-mode = "input";
+	status = "okay";
+};
+
+&pciea {
+	phys = <&hsio_phy 0 2 0>;
+	phy-names = "pcie-phy";
+};
+
+&pcieb {
+	phys = <&hsio_phy 1 2 1>;
+	phy-names = "pcie-phy";
+	clocks = <&pcieb_lpcg 2>, <&pcieb_lpcg 0>, <&pcieb_lpcg 1>,
+		  <&hsio_refb_clk>;
+	clock-names = "dbi", "mstr", "slv", "ext-ref";
+};
+
+&cooling_maps_map0 {
+	cooling-device =
+		<&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+		<&A53_1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+		<&A53_2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+		<&A53_3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+		<&A72_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
+		<&A72_1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
+};

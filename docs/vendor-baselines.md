@@ -1,28 +1,43 @@
-# Vendor baselines and POC change inventory
+# Vendor baselines, adaptation inventory, and licensing
 
-## Known baseline
+## Pinned Android baseline
 
-The POC README and its snapshot identify NXP Android `android-16.0.0_1.2.0`, with AOSP Android tag `android-16.0.0_r1` in the Repo manifest. Snapshot date: 2026-09-15. The POC reports no GMS. The manifest pins many NXP forks and Android projects to commit IDs.
+The initial source is NXP `android-16.0.0_1.2.0`, based on AOSP `android-16.0.0_r1`. `manifests/android16/nxp-imx-android-16.0.0_1.2.0-pinned.xml` is exported with `repo manifest -r` from the POC's synchronized source tree on 2026-09-30. It contains 1,018 projects pinned to resolved revisions; SHA-256: `0acfb7893fe89247b2ab8c706f99bfdf2496143fa69b768bc254027b8a6d5074`.
 
-The pinned snapshot is at [`../manifests/android16/nxp-imx8qm-poc-2026-09-15.xml`](../manifests/android16/nxp-imx8qm-poc-2026-09-15.xml). Its source README says it does not include local modifications or NXP proprietary release blobs. It is therefore evidence of the source baseline, not by itself a complete reproducible release manifest.
+Key projects:
 
-## Change inventory (initial)
+| Component | Project | Pinned revision |
+|---|---|---|
+| NXP device | `android-imx_device_fsl` | `53ec745a82a4eaaaa30f5dc64cd0dc2f95859443` |
+| Android kernel | `linux-imx` / `vendor/nxp-opensource/kernel_imx` | `35bbdb55359ca55922de0df807a606a7a968a5d3` |
+| U-Boot | `uboot-imx` | `f97912fcabb0a0931e848ae597d652096e9cc44e` |
+| ATF | `imx-atf` | `a266ff458c2526a6474036a5c6648be6fdc54fe3` |
+| imx-mkimage | `imx-mkimage` | `be80fadd5e7988214149a2bc48daac1b0950d4c2` |
 
-| Area | Evidence in POC | Classification | Integration status |
+The manifest includes NXP project remotes with separate account and license requirements. A successful public Repo sync has not been demonstrated; obtain access to restricted projects through NXP's authorized channels.
+
+## Apalis + Ixora changes
+
+| Area | Adaptation | Source/reference | Status |
 |---|---|---|---|
-| Android device/product | `device/toradex/apalis_imx8qm/` wrapper and product files | Toradex module / Android / build system | Not copied; audit needed |
-| Vendor NXP device tree/config | `device_nxp.patch` snapshot | SoC vendor + module/device-tree; individual hunks need review | Not copied; audit needed |
-| Kernel | `vendor_nxp-opensource_kernel_imx.patch` snapshot and kernel probe/build notes | Kernel / device-tree | Not copied; classify each hunk |
-| U-Boot | `vendor_nxp-opensource_uboot-imx.patch` snapshot | Bootloader | Not copied; classify each hunk |
-| Local overlays and scripts | POC `overlays/`, `scripts/`, and wrapper files | Android/product/build/deployment | Not copied; license and necessity review required |
-| Ixora-specific behavior | HDMI/LVDS, touch, networking and boot evidence | Carrier-board | Must isolate and map to exact files |
-| Historical UUU / `FLASH_TARGET` | Snapshot note says these changes are not reapplied by current setup; one is redundant and one belongs to an old attempt | Temporary/historical | Exclude from active integration unless re-justified |
+| Product | Thin `apalis_imx8qm` identity/configuration inheriting NXP `mek_8q` | NXP device project above | Imported; clean build pending |
+| Device tree | Apalis module and Ixora v1.1/v1.2 DTSI plus v1.2 top-level DTS | Toradex `linux-toradex` 6.6.138, SRCREV `f8f08c0cd5c2aae681887579e7502200178cf66c` | Ported to NXP kernel 6.12; hardware/source compatibility needs further validation |
+| Kernel config | Apalis GKI fragment | NXP kernel baseline `35bbdb5` | Included; clean kernel build pending |
+| HDMI firmware load | Small patch to NXP `cdns-mhdp-imx8qm.c` | NXP kernel project above | Patch included; application/build not validated here |
+| U-Boot | Apalis board, SPL, Android defconfigs and container configuration | Toradex U-Boot 2024.04 reference SRCREV `1f3c8b6671de3afad7f3dfa4c8ac1631f0a7a987`; NXP Android U-Boot above | Included; clean build pending |
+| Build integration | Materialize product into NXP `device/nxp/imx8q/`; enable Apalis DTB and add Apalis U-Boot feature names | NXP `imx-make.sh` source behavior | Helper included; NXP checkout not modified in this workspace |
+| SCFW/SECO | Apalis firmware pair required for bootloader image generation | Toradex BSP outputs | Not redistributed; required SHA-256 values are in `firmware/apalis/SHA256SUMS` |
+| Partitioning | Current source inherits NXP MEK 13/28 GiB layout | NXP partition files | Unsafe for reference unit's 14.8 GiB eMMC; no Apalis layout included |
 
-This is not a complete patch-by-patch classification. Before importing any POC code, inspect every patch, new/untracked file, license, and source origin. The POC notes warn that applying all snapshot patches on top of its overlay setup duplicates changes and can conflict.
+The POC's September 15 patch bundle is a historical snapshot, not an extra patch queue. Its current overlay setup already represents some patch content. Historical UUU/`FLASH_TARGET` edits that the POC no longer reapplies are excluded. Do not apply the old snapshot patches over the overlay setup without reviewing each hunk.
 
-## Missing reproducibility inputs
+## Licensing and excluded inputs
 
-- NXP proprietary release packages/blobs and their access/license conditions.
-- Exact export of the currently validated workspace state; the cited manifest snapshot is from 2026-09-15 while later work is documented through 2026-09-29.
-- Audited, non-overlapping Toradex adaptation set with source commits and patch purpose.
-- Clean-checkout setup/build commands and verified lunch product/output target.
+- Product makefiles and kernel config use SPDX `Apache-2.0`.
+- Ported Toradex kernel device-tree files retain their `GPL-2.0-or-later OR MIT` notices.
+- U-Boot adaptations retain GPL notices; the HDMI kernel patch is marked `GPL-2.0-only`.
+- SCFW and SECO binaries are not stored here; builders must obtain authorized copies and match the listed hashes.
+- The POC boot animation and custom partition-table data are excluded because their redistribution license was not established. The code currently falls back to the NXP MEK table, which must not be flashed to Apalis.
+- NXP's MEK product references a signed VPU codec artifact from a separately licensed package. Do not replace it with an unsigned stub; clean build remains blocked until this dependency is lawfully resolved or removed by a reviewed adaptation.
+
+Retain upstream copyright notices and follow the terms of every manifest project. No release or redistribution claim is made for external vendor firmware.
